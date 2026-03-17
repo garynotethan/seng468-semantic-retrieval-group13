@@ -2,11 +2,12 @@
 
 
 ## start phase stuff
-- [ ] initial system architecture diagram
-- [ ] create docker compose file
-- [ ] basic api outline
+- [x] initial system architecture diagram
+- [x] create docker compose file
+- [x] basic api outline
 - [ ] setup message queue
 - [ ] setup worker
+- [ ] choose and setup db
 
 
 ## later..
