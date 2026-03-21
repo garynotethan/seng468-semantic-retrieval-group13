@@ -1,0 +1,48 @@
+# todo: health checks, env variables
+
+services:
+  api:
+    build: ./api
+    ports:
+      - "8080:8080"
+    depends_on:
+      - db
+      - worker
+      - rabbitmq
+      - minio
+    environment:
+    command: python app.py
+
+  worker:
+    build: ./worker
+    depends_on:
+      - db
+      - rabbitmq
+      - minio
+    environment:
+
+  db:
+    # todo: pick vector db
+  
+  rabbitmq:
+    image: rabbitmq:4.2.4-management-alpine 
+    #alpine is smaller but idk if it doesn't include any important stuff
+    ports:
+      - "15672:15672"
+      - "5672:5672"
+  
+  minio:
+    image: minio/minio:RELEASE.2025-09-07T16-13-09Z-cpuv1
+    ports:
+      - "9000:9000"
+      - "9001:9001"
+    command: server /data --console-address ":9001"
+    volumes:
+      - minio_data:/data
+
+    
+        
+
+volumes:
+  minio_data:
+  # todo: add db volume
