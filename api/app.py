@@ -31,6 +31,7 @@ with app.app_context():
     else:
         print("Could not connect to database/minio after multiple retries.")
 
+
 @app.route('/auth/signup', methods=['POST'])
 def signup():
     data = request.get_json()
@@ -94,6 +95,23 @@ def upload_document():
     )
     db.session.add(new_doc)
     db.session.commit()
+
+    # send to rabbitmq
+    connection = pika.BlockingConnection(pika.ConnectionParameters(host='rabbitmq'))
+    channel = connection.channel()
+    channel.queue_declare(queue='pdf_tasks_queue', durable=True)
+    message = {
+        "document_id" : doc_id,
+        "user_id" : user_id
+    }
+    channel.basic_publish(
+            exchange = '',
+            routing_key=pdf_tasks_queue,
+            body=json.dumps(message),
+            properties=pika.BasicProperties(delivery_mode=pika.DeliveryMode.Persistant)
+    )
+    
+    
     
     return jsonify({
         "message": "PDF uploaded, processing started",
