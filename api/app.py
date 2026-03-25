@@ -1,10 +1,11 @@
 import os
 import uuid
 import time
-from flask import Flask, request, jsonify
+from flask import Flask, request, jsonify, json
 from flask_jwt_extended import JWTManager, create_access_token, jwt_required, get_jwt_identity
 from models import db, User, Document
 import storage
+import pika
 
 app = Flask(__name__)
 
@@ -106,9 +107,9 @@ def upload_document():
     }
     channel.basic_publish(
             exchange = '',
-            routing_key=pdf_tasks_queue,
+            routing_key="pdf_tasks_queue",
             body=json.dumps(message),
-            properties=pika.BasicProperties(delivery_mode=pika.DeliveryMode.Persistant)
+            properties=pika.BasicProperties(delivery_mode=pika.DeliveryMode.Persistent)
     )
     
     
