@@ -6,11 +6,9 @@ def process_pdf(ch, method, properties, body):
     user_id = data['user_id']
     document_id = data['document_id']
     
-
-
 def main():
     # host should be name of rabbitmq container i think
-    connection = pika.BlockingConnection(pika.ConnectoinParameters(host='rabbitmq'))
+    connection = pika.BlockingConnection(pika.ConnectionParameters(host='rabbitmq'))
     channel = connection.channel()
 
     channel.queue.declare(queue='pdf_tasks_queue', durable=True)
@@ -24,5 +22,5 @@ def main():
 
 
 if __name__ == '__main__':
-    main():
+    main()
 
