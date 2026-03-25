@@ -11,7 +11,7 @@ def main():
     connection = pika.BlockingConnection(pika.ConnectionParameters(host='rabbitmq'))
     channel = connection.channel()
 
-    channel.queue.declare(queue='pdf_tasks_queue', durable=True)
+    channel.queue_declare(queue='pdf_tasks_queue', durable=True)
 
     # can setup stuff like prefetch, queue type args idk
 
