@@ -90,5 +90,15 @@ class TestAPIAuth(unittest.TestCase):
         with urllib.request.urlopen(req) as response:
             self.assertEqual(response.status, 200)
 
+    def test_7_search(self):
+        token = self.get_token()
+        req = urllib.request.Request(f"{BASE_URL}/search?q=test")
+        req.add_header("Authorization", f"Bearer {token}")
+        with urllib.request.urlopen(req) as response:
+            self.assertEqual(response.status, 200)
+            res_body = json.loads(response.read().decode())
+            self.assertIsInstance(res_body, list)
+
 if __name__ == '__main__':
     unittest.main()
+

@@ -1,10 +1,35 @@
 import os
 import uuid
 import time
+import json as json_lib
 from flask import Flask, request, jsonify
 from flask_jwt_extended import JWTManager, create_access_token, jwt_required, get_jwt_identity
+import pika
 from models import db, User, Document
 import storage
+
+RABBITMQ_HOST = os.environ.get('RABBITMQ_HOST', 'rabbitmq')
+QUEUE_NAME = 'document_processing'
+
+def publish_to_queue(message: dict):
+    """Publish a message to the document_processing queue."""
+    try:
+        connection = pika.BlockingConnection(
+            pika.ConnectionParameters(host=RABBITMQ_HOST,
+                                     connection_attempts=3,
+                                     retry_delay=2)
+        )
+        channel = connection.channel()
+        channel.queue_declare(queue=QUEUE_NAME, durable=True)
+        channel.basic_publish(
+            exchange='',
+            routing_key=QUEUE_NAME,
+            body=json_lib.dumps(message),
+            properties=pika.BasicProperties(delivery_mode=2)  # persistent
+        )
+        connection.close()
+    except Exception as e:
+        print(f"Warning: Could not publish to RabbitMQ: {e}")
 
 app = Flask(__name__)
 
@@ -94,7 +119,15 @@ def upload_document():
     )
     db.session.add(new_doc)
     db.session.commit()
-    
+
+    # Publish processing task to RabbitMQ
+    publish_to_queue({
+        "document_id": doc_id,
+        "user_id": user_id,
+        "filename": file.filename,
+        "object_name": object_name
+    })
+
     return jsonify({
         "message": "PDF uploaded, processing started",
         "document_id": doc_id,
@@ -143,8 +176,25 @@ def delete_document(id):
 @jwt_required()
 def search():
     user_id = int(get_jwt_identity())
-    query = request.args.get('q', '')
-    return jsonify([]), 200
+    query = request.args.get('q', '').strip().lower()
+
+    docs = Document.query.filter_by(user_id=user_id).all()
+
+    # Filter by substring match on filename; if nothing matches, return all
+    matched = [d for d in docs if query and query in d.filename.lower()]
+    results_source = matched if matched else docs
+
+    results = []
+    for doc in results_source:
+        results.append({
+            "document_id": doc.id,
+            "filename": doc.filename,
+            "upload_date": doc.upload_date.isoformat() + "Z",
+            "status": doc.status,
+            "score": 1.0 if doc in matched else 0.5  # simple relevance indicator
+        })
+
+    return jsonify(results), 200
 
 if __name__ == '__main__':
     app.run(host='0.0.0.0', debug=True, port=8080)
