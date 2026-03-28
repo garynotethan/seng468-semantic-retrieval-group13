@@ -22,14 +22,12 @@ services:
     build: ./worker
     environment:
       - DATABASE_URL=postgresql://postgres:postgres@db:5432/seng468
+      - RABBITMQ_HOST=rabbitmq
     depends_on:
       db:
         condition: service_healthy
       rabbitmq:
         condition: service_healthy
-    environment:
-      - DATABASE_URL=postgresql://postgres:postgres@db:5432/seng468
-      - RABBITMQ_HOST=rabbitmq
     restart: on-failure
 
   db:
