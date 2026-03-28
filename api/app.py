@@ -1,10 +1,11 @@
 import os
 import uuid
 import time
-from flask import Flask, request, jsonify
+from flask import Flask, request, jsonify, json
 from flask_jwt_extended import JWTManager, create_access_token, jwt_required, get_jwt_identity
 from models import db, User, Document
 import storage
+import pika
 
 app = Flask(__name__)
 
@@ -30,6 +31,7 @@ with app.app_context():
             time.sleep(2)
     else:
         print("Could not connect to database/minio after multiple retries.")
+
 
 @app.route('/auth/signup', methods=['POST'])
 def signup():
@@ -94,6 +96,23 @@ def upload_document():
     )
     db.session.add(new_doc)
     db.session.commit()
+
+    # send to rabbitmq
+    connection = pika.BlockingConnection(pika.ConnectionParameters(host='rabbitmq'))
+    channel = connection.channel()
+    channel.queue_declare(queue='pdf_tasks_queue', durable=True)
+    message = {
+        "document_id" : doc_id,
+        "user_id" : user_id
+    }
+    channel.basic_publish(
+            exchange = '',
+            routing_key="pdf_tasks_queue",
+            body=json.dumps(message),
+            properties=pika.BasicProperties(delivery_mode=pika.DeliveryMode.Persistent)
+    )
+    
+    
     
     return jsonify({
         "message": "PDF uploaded, processing started",

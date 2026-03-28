@@ -5,9 +5,9 @@
 - [x] initial system architecture diagram
 - [x] create docker compose file
 - [x] basic api outline
-- [ ] setup message queue
-- [ ] setup worker
-- [ ] choose and setup db
+- [x] setup message queue
+- [x] setup worker
+- [x] choose and setup db
 
 
 ## later..
