@@ -7,6 +7,7 @@ from flask_jwt_extended import JWTManager, create_access_token, jwt_required, ge
 import pika
 from models import db, User, Document
 import storage
+import pika
 
 RABBITMQ_HOST = os.environ.get('RABBITMQ_HOST', 'rabbitmq')
 QUEUE_NAME = 'document_processing'
@@ -55,6 +56,7 @@ with app.app_context():
             time.sleep(2)
     else:
         print("Could not connect to database/minio after multiple retries.")
+
 
 @app.route('/auth/signup', methods=['POST'])
 def signup():
