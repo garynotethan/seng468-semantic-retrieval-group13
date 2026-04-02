@@ -1,5 +1,6 @@
 from flask_sqlalchemy import SQLAlchemy
 from werkzeug.security import generate_password_hash, check_password_hash
+from pgvector.sqlalchemy import Vector
 
 db = SQLAlchemy()
 
@@ -25,3 +26,18 @@ class Document(db.Model):
     upload_date = db.Column(db.DateTime, nullable=False, default=db.func.current_timestamp())
     status = db.Column(db.String(50), nullable=False, default='processing')
     page_count = db.Column(db.Integer, nullable=True)
+
+class DocumentChunk(db.Model):
+    # stores the chunks for the documents
+    __tablename__ = 'document_chunks'
+
+    id = db.Column(db.String(36), primary_key=True)
+    document_id = db.Column(db.String(36), db.ForeignKey('documents.id'), nullable=False, ondelete='CASCADE')
+    # cascade for proper deletion 
+    user_id = db.Column(db.Integer, nullable=False) 
+    chunk_index = db.Column(db.Integer, nullable=True)
+    chunk_text = db.Column(db.Integer, nullable=True)
+
+    embedding = db.Column(Vector(384))
+
+     
