@@ -8,6 +8,7 @@ import pika
 from models import db, User, Document
 import storage
 import pika
+import shared
 
 RABBITMQ_HOST = os.environ.get('RABBITMQ_HOST', 'rabbitmq')
 QUEUE_NAME = 'document_processing'
