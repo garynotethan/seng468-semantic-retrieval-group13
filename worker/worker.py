@@ -3,10 +3,71 @@ import json
 import time
 import pika
 import sqlalchemy
+import sys
+sys.path.insert(0, '/app')
+from shared.embeddings import embed_chunks
+from minio import Minio
+import pymupdf4llm
+import fitz
 
 DB_URL = os.environ.get('DATABASE_URL', 'postgresql://postgres:postgres@db:5432/seng468')
 RABBITMQ_HOST = os.environ.get('RABBITMQ_HOST', 'rabbitmq')
 QUEUE_NAME = 'document_processing'
+
+MINIO_ENDPOINT = os.environ.get("MINIO_ENDPOINT")
+MINIO_ACCESS_KEY = os.environ.get("MINIO_ACCESS_KEY")
+MINIO_SECRET_KEY = os.environ.get("MINIO_SECRET_KEY")
+BUCKET_NAME = os.environ.get("BUCKET_NAME")
+
+def get_minio_client():
+    return Minio(
+        MINIO_ENDPOINT,
+        MINIO_ACCESS_KEY,
+        MINIO_SECRET_KEY,
+        secure=False #cuz its local
+    )
+
+def extract_text_chunks(pdf_bytes, chunk_size, overlap) -> list:
+    
+    doc = fitz.Document(stream=pdf_bytes, filetype="pdf")
+    # this reads directly rather than saving a temp file
+
+    text = pymupdf4llm.to_markdown(doc)
+    
+    chunks = []
+    start = 0
+    while start < len(text):
+        end = start + chunk_size
+        chunk = text[start:end].strip()
+        if chunk: chunks.append(chunk)
+        start += chunk_size - overlap
+    return chunks
+
+def save_chunks(engine, document_id, user_id, chunks, vectors) -> None:
+
+    with engine.connect() as conn:
+        conn.execute(
+            sqlalchemy.text("DELETE FROM document_chunks WHERE document_id = :doc_id"),
+            {"doc_id": document_id}
+        )
+        for i, (chunk_text, embedding) in enumerate(zip(chunks, vectors)):
+            conn.execute(
+                sqlalchemy.text(
+                    """
+                    INSERT INTO document_chunks (document_id, user_id, chunk_index, chunk_text, embedding)
+                    VALUES (:doc_id, :user_id, :idx, :text, :embedding)
+                    """
+                ),
+                {
+                    "doc_id": document_id,
+                    "user_id": user_id,
+                    "idx": i,
+                    "text": chunk_text,
+                    "embedding": str(embedding)
+                }
+            )
+        conn.commit()
+
 
 
 def get_db_engine():
@@ -41,14 +102,31 @@ def process_document(ch, method, properties, body):
         doc_id = message.get('document_id')
         filename = message.get('filename', 'unknown')
         user_id = message.get('user_id')
+        object_name = message.get('object_name')
 
         print(f"[Worker] Processing document: {doc_id} ({filename}) for user {user_id}")
 
-        # Simulate processing (in future: PDF extraction, chunking, embedding)
-        time.sleep(1)
+        minio_client = get_minio_client()
+        res = minio_client.get_object(BUCKET_NAME, object_name)
+        pdf_bytes = res.read()
+        res.close()
+        print(f"[Worker] downloaded {len(pdf_bytes)} bytes from minio")
+
+        chunks = extract_text_chunks(pdf_bytes)
+        if not chunks:
+            print(f"[Worker] no text found in {filename}")
+            engine = get_db_engine()
+            update_document_status(engine, doc_id, 'completed', page_count=0)
+            engine.dispose()
+            ch.basic_ack(delivery_tag=method.delivery_tag)
+            return
+        
+        vectors = embed_chunks(chunks)
+        print(f"[Worker] generated {len(vectors)} embeddings")
 
         # Update status to completed
         engine = get_db_engine()
+        save_chunks(engine, doc_id, user_id, chunks, vectors)
         update_document_status(engine, doc_id, 'completed', page_count=1)
         engine.dispose()
 

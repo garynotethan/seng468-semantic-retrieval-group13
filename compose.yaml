@@ -2,7 +2,10 @@
 
 services:
   api:
-    build: ./api
+    build: 
+      context: ./api
+      additional_contexts:
+        shared_context: ./shared 
     ports:
       - "8080:8080"
     depends_on:
@@ -19,10 +22,17 @@ services:
     command: python app.py
 
   worker:
-    build: ./worker
+    build: 
+      context: ./worker
+      additional_contexts:
+          shared_context: ./shared 
     environment:
       - DATABASE_URL=postgresql://postgres:postgres@db:5432/seng468
       - RABBITMQ_HOST=rabbitmq
+      - MINIO_ENDPOINT=minio:9000
+      - MINIO_ACCESS_KEY=minioadmin
+      - MINIO_SECRET_KEY=minioadmin
+      - BUCKET_NAME=documents
     depends_on:
       db:
         condition: service_healthy

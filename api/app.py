@@ -9,6 +9,10 @@ from models import db, User, Document
 import storage
 import pika
 import shared
+import sqlalchemy 
+import sys
+sys.path.insert(0, '/app')
+from shared.embeddings import embed_text
 
 RABBITMQ_HOST = os.environ.get('RABBITMQ_HOST', 'rabbitmq')
 QUEUE_NAME = 'document_processing'
@@ -47,6 +51,9 @@ with app.app_context():
     retries = 5
     while retries > 0:
         try:
+            db.session.execute(text("CREAT EXTENSION IF NOT EXISTS vector"))
+            db.session.commit()
+
             db.create_all()
             storage.init_bucket()
             print("Database and MinIO connected successfully.")
@@ -181,23 +188,36 @@ def search():
     user_id = int(get_jwt_identity())
     query = request.args.get('q', '').strip().lower()
 
-    docs = Document.query.filter_by(user_id=user_id).all()
+    query_vector = embed_text(query)
 
-    # Filter by substring match on filename; if nothing matches, return all
-    matched = [d for d in docs if query and query in d.filename.lower()]
-    results_source = matched if matched else docs
+    results = db.session.execute(
+        sqlalchemy.text(
+            '''
+            SELECT dc.document_id, dc.chunk_text, dc.chunk_index, d.filename,
+            1 - (dc.embeddiong <=> CAST(:query_vec AS vector)) AS score
+            FROM document_chunks dc
+            JOIN documents d ON d.id = dc.document_id
+            WHERE dc.user_id = :user_id
+            ORDER BY dc.embedding <=> CAST(:query_vec AS vector)
+            LIMIT 5
+            '''
+        ),
+        {
+            "query_vec": str(query_vector),
+            "user_id": user_id
+        }
+    ).fetchall()
 
-    results = []
-    for doc in results_source:
-        results.append({
-            "document_id": doc.id,
-            "filename": doc.filename,
-            "upload_date": doc.upload_date.isoformat() + "Z",
-            "status": doc.status,
-            "score": 1.0 if doc in matched else 0.5  # simple relevance indicator
+    output = []
+    for row in results:
+        output.append({
+            "chunk_text": row.chunk_text,
+            "score": row.score,
+            "document_id": row.id,
+            "filename": row.filename,
         })
 
-    return jsonify(results), 200
+    return jsonify(output), 200
 
 if __name__ == '__main__':
     app.run(host='0.0.0.0', debug=True, port=8080)

@@ -8,6 +8,6 @@ COPY requirements.txt .
 RUN pip install --no-cache-dir -r requirements.txt
 
 COPY . .
-COPY ../shared /app/shared
+COPY --from=shared_context . /app/shared
 
 CMD ["python", "worker.py"]
