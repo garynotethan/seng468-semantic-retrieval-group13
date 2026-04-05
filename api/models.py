@@ -32,12 +32,11 @@ class DocumentChunk(db.Model):
     __tablename__ = 'document_chunks'
 
     id = db.Column(db.String(36), primary_key=True)
-    document_id = db.Column(db.String(36), db.ForeignKey('documents.id'), nullable=False, ondelete='CASCADE')
+    document_id = db.Column(db.String(36), db.ForeignKey('documents.id', ondelete='CASCADE'), nullable=False)
     # cascade for proper deletion 
     user_id = db.Column(db.Integer, nullable=False) 
     chunk_index = db.Column(db.Integer, nullable=True)
     chunk_text = db.Column(db.Integer, nullable=True)
-
     embedding = db.Column(Vector(384))
 
      
