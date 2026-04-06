@@ -11,11 +11,11 @@
 
 
 ## later..
-- [ ] authentication for signup/login/etc
-- [ ] pdf upload
-- [ ] pdf storage
-- [ ] choose embedding model/strategy
-- [ ] setup embedding storage
-- [ ] pdf extraction
+- [x] authentication for signup/login/etc
+- [x] pdf upload
+- [x] pdf storage
+- [x] choose embedding model/strategy
+- [x] setup embedding storage
+- [x] pdf extraction
 - [ ] load testing
 - [ ] basic front end
