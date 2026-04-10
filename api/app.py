@@ -10,6 +10,7 @@ import storage
 import pika
 import shared
 import sqlalchemy 
+from sqlalchemy import text
 import sys
 sys.path.insert(0, '/app')
 from shared.embeddings import embed_text
@@ -51,7 +52,7 @@ with app.app_context():
     retries = 5
     while retries > 0:
         try:
-            db.session.execute(text("CREAT EXTENSION IF NOT EXISTS vector"))
+            db.session.execute(text("CREATE EXTENSION IF NOT EXISTS vector"))
             db.session.commit()
 
             db.create_all()
@@ -194,7 +195,7 @@ def search():
         sqlalchemy.text(
             '''
             SELECT dc.document_id, dc.chunk_text, dc.chunk_index, d.filename,
-            1 - (dc.embeddiong <=> CAST(:query_vec AS vector)) AS score
+            1 - (dc.embedding <=> CAST(:query_vec AS vector)) AS score
             FROM document_chunks dc
             JOIN documents d ON d.id = dc.document_id
             WHERE dc.user_id = :user_id

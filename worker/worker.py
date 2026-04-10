@@ -112,7 +112,7 @@ def process_document(ch, method, properties, body):
         res.close()
         print(f"[Worker] downloaded {len(pdf_bytes)} bytes from minio")
 
-        chunks = extract_text_chunks(pdf_bytes)
+        chunks = extract_text_chunks(pdf_bytes, 500, 100)
         if not chunks:
             print(f"[Worker] no text found in {filename}")
             engine = get_db_engine()
