@@ -29,18 +29,31 @@ class SearchUser(HttpUser):
         else:
             print(f"error during login for {self.username}: {login.status_code}")
         
-        def _auth_headers(self):
-            return {"Authorization": f"Bearer {self.token}"} if self.token else {}
+    def _auth_headers(self):
+        return {"Authorization": f"Bearer {self.token}"} if self.token else {}
 
 
     @task(3)
     def search_documents(self):
-        
+        queries = [
+            "Stet clita kasd",
+            "Hello, here is some text without a meaning.",
+            "Erforderliche Vorkenntnisse",
+            "حبيبي",
+            "This is a sample document with two columns",
+            "Lorem ipsum"
+        ]
+        query = random.choice(queries)
+        self.client.get(
+            f"/search?q={query}",
+            headers=self.auth_headers(),
+            name="/search?=[query]"
+        )
     
 
     @task(2)
     def list_documents(self):
-        pass
+        self.client.get("/documents", headers=self._auth_headers())
     
 
     @task(1)
@@ -57,7 +70,7 @@ class SearchUser(HttpUser):
             response = self.client.post(
                 "/documents",
                 files = {"file": (os.path.basename(pdf_path), f, "applications/pdf")},
-                headers = self.auth_headers(),
+                headers = self._auth_headers(),
                 name = "small document"
             )
             if response.status_code == 202:
@@ -71,7 +84,7 @@ class SearchUser(HttpUser):
             response = self.client.post(
                 "/documents",
                 files = {"file": ("large.pdf", f, "applications/pdf")},
-                headers = self.auth_headers(),
+                headers = self._auth_headers(),
                 name = "large document"
             )
             if response.status_code == 202:
@@ -82,5 +95,5 @@ class SearchUser(HttpUser):
     upload_large_document.locust_tag_set = {"large"}
     # locust --tags large to run
 
-    
+
 
