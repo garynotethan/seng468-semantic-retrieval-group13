@@ -46,7 +46,7 @@ class SearchUser(HttpUser):
         query = random.choice(queries)
         self.client.get(
             f"/search?q={query}",
-            headers=self.auth_headers(),
+            headers=self._auth_headers(),
             name="/search?=[query]"
         )
     
@@ -69,7 +69,7 @@ class SearchUser(HttpUser):
         with open(pdf_path, "rb") as f:
             response = self.client.post(
                 "/documents",
-                files = {"file": (os.path.basename(pdf_path), f, "applications/pdf")},
+                files = {"file": (os.path.basename(pdf_path), f, "application/pdf")},
                 headers = self._auth_headers(),
                 name = "small document"
             )
@@ -83,7 +83,7 @@ class SearchUser(HttpUser):
         with open(pdf_path, "rb") as f:
             response = self.client.post(
                 "/documents",
-                files = {"file": ("large.pdf", f, "applications/pdf")},
+                files = {"file": ("large.pdf", f, "application/pdf")},
                 headers = self._auth_headers(),
                 name = "large document"
             )
