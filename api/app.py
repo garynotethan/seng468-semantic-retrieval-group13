@@ -189,7 +189,9 @@ def search():
     user_id = int(get_jwt_identity())
     query = request.args.get('q', '').strip().lower()
 
+    t0 = time.time()
     query_vector = embed_text(query)
+    t1 = time.time()
 
     results = db.session.execute(
         sqlalchemy.text(
@@ -208,6 +210,7 @@ def search():
             "user_id": user_id
         }
     ).fetchall()
+    t2 = time.time()
 
     output = []
     for row in results:
@@ -217,6 +220,9 @@ def search():
             "document_id": row.id,
             "filename": row.filename,
         })
+
+    t3 = time.time()
+    print(f"embed={t1-t0:.3f}s  db_query={t2-t1:.3f}s  serialize={t3-t2:.3f}s  total={t3-t0:.3f}s")
 
     return jsonify(output), 200
 
