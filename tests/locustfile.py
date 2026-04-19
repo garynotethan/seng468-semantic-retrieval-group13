@@ -1,6 +1,8 @@
 from locust import HttpUser, task, between, events
 import os
 import time
+import random
+ 
 
 class SearchUser(HttpUser):
 
@@ -26,18 +28,68 @@ class SearchUser(HttpUser):
             self.token = login.json().get("token")
         else:
             print(f"error during login for {self.username}: {login.status_code}")
+        
+    def _auth_headers(self):
+        return {"Authorization": f"Bearer {self.token}"} if self.token else {}
 
 
-    @task()
+    @task(3)
     def search_documents(self):
-        pass
+        queries = [
+            "continuous functions and metric spaces",
+            "topological spaces and open sets",
+            "convergence of sequences",
+            "homeomorphism between spaces",
+            "compact subsets of a metric space",
+            "definition of a manifold",
+            "boundary of a topological space",
+            "connected components",
+        ]
+        query = random.choice(queries)
+        self.client.get(
+            f"/search?q={query}",
+            headers=self._auth_headers(),
+            name="/search?=[query]"
+        )
     
 
-    @task()
+    @task(2)
     def list_documents(self):
-        pass
+        self.client.get("/documents", headers=self._auth_headers())
     
 
-    @task()
+    @task(1)
     def upload_document(self):
-        pass
+        pdf_path = os.path.join(os.path.dirname(__file__), "test_documents", "large.pdf")
+
+        with open(pdf_path, "rb") as f:
+            response = self.client.post(
+                "/documents",
+                files = {"file": ("large.pdf", f, "application/pdf")},
+                headers = self._auth_headers(),
+                name = "/documents [upload 5MB]"
+            )
+            if response.status_code == 202:
+                doc_id = response.json().get("document_id")
+                if doc_id:
+                    self.doc_ids.append(doc_id)
+    @task(0)
+    def upload_large_document(self):
+        pdf_path = os.path.join(os.path.dirname(__file__), "test_documents", "large.pdf")
+        with open(pdf_path, "rb") as f:
+            response = self.client.post(
+                "/documents",
+                files = {"file": ("large.pdf", f, "application/pdf")},
+                headers = self._auth_headers(),
+                name = "large document"
+            )
+            if response.status_code == 202:
+                    doc_id = response.json().get("document_id")
+                    if doc_id:
+                        self.doc_ids.append(doc_id)
+
+    upload_large_document.locust_tag_set = {"large"}
+    # locust --tags large to run
+
+
+
