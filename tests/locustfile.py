@@ -36,12 +36,14 @@ class SearchUser(HttpUser):
     @task(3)
     def search_documents(self):
         queries = [
-            "Stet clita kasd",
-            "Hello, here is some text without a meaning.",
-            "Erforderliche Vorkenntnisse",
-            "حبيبي",
-            "This is a sample document with two columns",
-            "Lorem ipsum"
+            "continuous functions and metric spaces",
+            "topological spaces and open sets",
+            "convergence of sequences",
+            "homeomorphism between spaces",
+            "compact subsets of a metric space",
+            "definition of a manifold",
+            "boundary of a topological space",
+            "connected components",
         ]
         query = random.choice(queries)
         self.client.get(
@@ -58,20 +60,14 @@ class SearchUser(HttpUser):
 
     @task(1)
     def upload_document(self):
-        DOCUMENTS = [
-            os.path.join(os.path.dirname(__file__), "test_documents", "small.pdf"),
-            os.path.join(os.path.dirname(__file__), "test_documents", "arabic.pdf"),
-            os.path.join(os.path.dirname(__file__), "test_documents", "medium.pdf"),
-            os.path.join(os.path.dirname(__file__), "test_documents", "multicolumn.pdf"),
-        ]
-        pdf_path = random.choice(DOCUMENTS)
+        pdf_path = os.path.join(os.path.dirname(__file__), "test_documents", "large.pdf")
 
         with open(pdf_path, "rb") as f:
             response = self.client.post(
                 "/documents",
-                files = {"file": (os.path.basename(pdf_path), f, "application/pdf")},
+                files = {"file": ("large.pdf", f, "application/pdf")},
                 headers = self._auth_headers(),
-                name = "small document"
+                name = "/documents [upload 5MB]"
             )
             if response.status_code == 202:
                 doc_id = response.json().get("document_id")
