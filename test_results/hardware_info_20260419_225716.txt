@@ -1,0 +1,5 @@
+=== Hardware Specifications ===
+OS: Linux 6.18.3-arch1-1
+Processor: 
+CPU Count: 16 (Logical), 8 (Physical)
+RAM: 30.47 GB

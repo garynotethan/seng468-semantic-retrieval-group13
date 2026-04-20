@@ -56,6 +56,11 @@ with app.app_context():
             db.session.commit()
 
             db.create_all()
+            
+            # Add HNSW index for vector search scalability if not exists
+            db.session.execute(text("CREATE INDEX IF NOT EXISTS idx_document_chunks_embedding ON document_chunks USING hnsw (embedding vector_cosine_ops)"))
+            db.session.commit()
+
             storage.init_bucket()
             print("Database and MinIO connected successfully.")
             break
@@ -215,9 +220,9 @@ def search():
     output = []
     for row in results:
         output.append({
-            "chunk_text": row.chunk_text,
+            "text": row.chunk_text,
             "score": row.score,
-            "document_id": row.id,
+            "document_id": row.document_id,
             "filename": row.filename,
         })
 

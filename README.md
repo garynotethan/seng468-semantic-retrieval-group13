@@ -61,6 +61,20 @@ python3 tests/test_api.py
 5. **Document Retrieval**: Pulls the DB relation state and verifies the system correctly retrieves the user's successfully synced MinIO files.
 6. **Document Deletion**: Checks that issuing `DELETE` recursively purges the blob from MinIO alongside cleanly archiving the relational PostgreSQL DB record.
 
+## Running Load Tests
+
+The system includes a Locust load testing script in `tests/load_test.py`.
+
+To run the load tests:
+
+1. Ensure the system is running (`docker compose up -d`).
+2. Install Locust locally: `pip install locust`.
+3. Run the load test:
+   ```bash
+   locust -f tests/load_test.py --host http://localhost:8080
+   ```
+4. Access the Locust UI at `http://localhost:8089` to start the test.
+
 ## Stopping the System
 
 To safely stop the containers and wipe the attached volume data for a fresh run, use:

@@ -124,10 +124,13 @@ def process_document(ch, method, properties, body):
         vectors = embed_chunks(chunks)
         print(f"[Worker] generated {len(vectors)} embeddings")
 
+        # Get actual page count
+        page_count = len(fitz.Document(stream=pdf_bytes, filetype="pdf"))
+        
         # Update status to completed
         engine = get_db_engine()
         save_chunks(engine, doc_id, user_id, chunks, vectors)
-        update_document_status(engine, doc_id, 'completed', page_count=1)
+        update_document_status(engine, doc_id, 'completed', page_count=page_count)
         engine.dispose()
 
         print(f"[Worker] Completed processing: {doc_id}")

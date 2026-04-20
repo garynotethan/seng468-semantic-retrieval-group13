@@ -3,9 +3,9 @@ WORKDIR /app
 ENV FLASK_APP=app.py
 ENV FLASK_RUN_HOST=0.0.0.0
 RUN apt-get update && apt-get install -y libpq-dev gcc
-COPY requirements.txt .
+COPY api/requirements.txt .
 RUN pip install --no-cache-dir -r requirements.txt
-COPY . .
-COPY --from=shared_context . /app/shared
-EXPOSE 5000
-CMD ["flask", "run", "--debug"]
+COPY api/ .
+COPY shared /app/shared
+EXPOSE 8080
+CMD ["gunicorn", "--workers", "4", "--bind", "0.0.0.0:8080", "app:app"]

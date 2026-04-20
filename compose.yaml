@@ -2,10 +2,9 @@
 
 services:
   api:
-    build: 
-      context: ./api
-      additional_contexts:
-        shared_context: ./shared 
+    build:
+      context: .
+      dockerfile: api/Dockerfile
     ports:
       - "8080:8080"
     depends_on:
@@ -22,10 +21,9 @@ services:
     command: gunicorn --workers 4 --bind 0.0.0.0:8080 app:app
 
   worker:
-    build: 
-      context: ./worker
-      additional_contexts:
-          shared_context: ./shared 
+    build:
+      context: .
+      dockerfile: worker/Dockerfile
     environment:
       - DATABASE_URL=postgresql://postgres:postgres@db:5432/seng468
       - RABBITMQ_HOST=rabbitmq
