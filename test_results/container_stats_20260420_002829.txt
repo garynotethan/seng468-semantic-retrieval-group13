@@ -1,0 +1,131 @@
+=== Container Performance Log (2026-04-20 00:28:29.987599) ===
+Interval: 2s
+
+
+--- Snapshot at 00:28:32 ---
+NAME                                            CPU %     MEM USAGE / LIMIT     MEM %     NET I/O          BLOCK I/O
+seng468-semantic-retrieval-group13-api-1        0.02%     1.089GiB / 30.47GiB   3.57%     189MB / 107MB    361MB / 92.1MB
+seng468-semantic-retrieval-group13-worker-1     726.59%   1.058GiB / 30.47GiB   3.47%     450MB / 2.96MB   244MB / 417MB
+seng468-semantic-retrieval-group13-db-1         0.60%     39.11MiB / 30.47GiB   0.13%     6.44MB / 655kB   50.1MB / 24.4MB
+seng468-semantic-retrieval-group13-minio-1      0.01%     155.5MiB / 30.47GiB   0.50%     443MB / 363MB    146MB / 684MB
+seng468-semantic-retrieval-group13-rabbitmq-1   0.08%     63.39MiB / 30.47GiB   0.20%     299kB / 217kB    40.7MB / 44MB
+
+--- Snapshot at 00:28:36 ---
+NAME                                            CPU %     MEM USAGE / LIMIT     MEM %     NET I/O          BLOCK I/O
+seng468-semantic-retrieval-group13-api-1        136.93%   1.108GiB / 30.47GiB   3.64%     216MB / 134MB    361MB / 92.1MB
+seng468-semantic-retrieval-group13-worker-1     710.60%   1.058GiB / 30.47GiB   3.47%     450MB / 2.96MB   244MB / 417MB
+seng468-semantic-retrieval-group13-db-1         0.81%     39.63MiB / 30.47GiB   0.13%     6.78MB / 701kB   50.1MB / 26MB
+seng468-semantic-retrieval-group13-minio-1      0.23%     157.1MiB / 30.47GiB   0.50%     469MB / 363MB    146MB / 712MB
+seng468-semantic-retrieval-group13-rabbitmq-1   0.35%     63.48MiB / 30.47GiB   0.20%     308kB / 225kB    40.7MB / 44MB
+
+--- Snapshot at 00:28:40 ---
+NAME                                            CPU %     MEM USAGE / LIMIT     MEM %     NET I/O          BLOCK I/O
+seng468-semantic-retrieval-group13-api-1        214.03%   1.147GiB / 30.47GiB   3.77%     243MB / 161MB    361MB / 92.1MB
+seng468-semantic-retrieval-group13-worker-1     690.07%   1.058GiB / 30.47GiB   3.47%     450MB / 2.96MB   244MB / 417MB
+seng468-semantic-retrieval-group13-db-1         1.10%     39.9MiB / 30.47GiB    0.13%     7.32MB / 763kB   50.1MB / 27.9MB
+seng468-semantic-retrieval-group13-minio-1      3.75%     157.3MiB / 30.47GiB   0.50%     496MB / 363MB    147MB / 740MB
+seng468-semantic-retrieval-group13-rabbitmq-1   0.18%     63.42MiB / 30.47GiB   0.20%     313kB / 229kB    40.7MB / 44MB
+
+--- Snapshot at 00:28:44 ---
+NAME                                            CPU %     MEM USAGE / LIMIT     MEM %     NET I/O          BLOCK I/O
+seng468-semantic-retrieval-group13-api-1        86.24%    1.09GiB / 30.47GiB    3.58%     296MB / 215MB    361MB / 92.1MB
+seng468-semantic-retrieval-group13-worker-1     777.65%   1.24GiB / 30.47GiB    4.07%     450MB / 2.96MB   244MB / 417MB
+seng468-semantic-retrieval-group13-db-1         4.99%     39.71MiB / 30.47GiB   0.13%     7.9MB / 803kB    50.1MB / 29.3MB
+seng468-semantic-retrieval-group13-minio-1      3.96%     158.9MiB / 30.47GiB   0.51%     560MB / 363MB    147MB / 809MB
+seng468-semantic-retrieval-group13-rabbitmq-1   0.66%     63.88MiB / 30.47GiB   0.20%     337kB / 250kB    40.7MB / 44MB
+
+--- Snapshot at 00:28:48 ---
+NAME                                            CPU %     MEM USAGE / LIMIT     MEM %     NET I/O          BLOCK I/O
+seng468-semantic-retrieval-group13-api-1        69.88%    1.09GiB / 30.47GiB    3.58%     366MB / 286MB    361MB / 92.1MB
+seng468-semantic-retrieval-group13-worker-1     589.98%   1.058GiB / 30.47GiB   3.47%     456MB / 2.98MB   244MB / 417MB
+seng468-semantic-retrieval-group13-db-1         0.54%     39.46MiB / 30.47GiB   0.13%     8.53MB / 839kB   50.1MB / 30.3MB
+seng468-semantic-retrieval-group13-minio-1      9.17%     171MiB / 30.47GiB     0.55%     619MB / 369MB    148MB / 873MB
+seng468-semantic-retrieval-group13-rabbitmq-1   0.99%     63.53MiB / 30.47GiB   0.20%     347kB / 260kB    40.7MB / 44MB
+
+--- Snapshot at 00:28:52 ---
+NAME                                            CPU %     MEM USAGE / LIMIT     MEM %     NET I/O          BLOCK I/O
+seng468-semantic-retrieval-group13-api-1        201.45%   1.09GiB / 30.47GiB    3.58%     424MB / 345MB    361MB / 92.1MB
+seng468-semantic-retrieval-group13-worker-1     723.13%   1.058GiB / 30.47GiB   3.47%     456MB / 2.98MB   244MB / 417MB
+seng468-semantic-retrieval-group13-db-1         0.55%     39.89MiB / 30.47GiB   0.13%     9.18MB / 874kB   50.1MB / 31.3MB
+seng468-semantic-retrieval-group13-minio-1      7.24%     174MiB / 30.47GiB     0.56%     677MB / 369MB    148MB / 936MB
+seng468-semantic-retrieval-group13-rabbitmq-1   0.45%     64.57MiB / 30.47GiB   0.21%     370kB / 281kB    40.7MB / 44MB
+
+--- Snapshot at 00:28:56 ---
+NAME                                            CPU %     MEM USAGE / LIMIT     MEM %     NET I/O          BLOCK I/O
+seng468-semantic-retrieval-group13-api-1        122.34%   1.09GiB / 30.47GiB    3.58%     494MB / 416MB    361MB / 92.1MB
+seng468-semantic-retrieval-group13-worker-1     740.70%   1.157GiB / 30.47GiB   3.80%     456MB / 2.98MB   244MB / 417MB
+seng468-semantic-retrieval-group13-db-1         0.84%     39.9MiB / 30.47GiB    0.13%     9.9MB / 908kB    50.1MB / 32.3MB
+seng468-semantic-retrieval-group13-minio-1      7.93%     174.4MiB / 30.47GiB   0.56%     747MB / 369MB    148MB / 1.01GB
+seng468-semantic-retrieval-group13-rabbitmq-1   1.15%     63.93MiB / 30.47GiB   0.20%     389kB / 297kB    40.7MB / 44MB
+
+--- Snapshot at 00:29:00 ---
+NAME                                            CPU %     MEM USAGE / LIMIT     MEM %     NET I/O          BLOCK I/O
+seng468-semantic-retrieval-group13-api-1        507.24%   1.09GiB / 30.47GiB    3.58%     577MB / 497MB    361MB / 92.1MB
+seng468-semantic-retrieval-group13-worker-1     712.02%   1.179GiB / 30.47GiB   3.87%     456MB / 2.98MB   244MB / 417MB
+seng468-semantic-retrieval-group13-db-1         0.78%     39.51MiB / 30.47GiB   0.13%     10.5MB / 942kB   50.1MB / 33.7MB
+seng468-semantic-retrieval-group13-minio-1      5.73%     178MiB / 30.47GiB     0.57%     827MB / 369MB    149MB / 1.1GB
+seng468-semantic-retrieval-group13-rabbitmq-1   0.96%     63.82MiB / 30.47GiB   0.20%     416kB / 320kB    40.7MB / 44MB
+
+--- Snapshot at 00:29:04 ---
+NAME                                            CPU %     MEM USAGE / LIMIT     MEM %     NET I/O          BLOCK I/O
+seng468-semantic-retrieval-group13-api-1        130.51%   1.09GiB / 30.47GiB    3.58%     636MB / 556MB    361MB / 92.1MB
+seng468-semantic-retrieval-group13-worker-1     315.51%   1.059GiB / 30.47GiB   3.48%     461MB / 3MB      244MB / 417MB
+seng468-semantic-retrieval-group13-db-1         4.44%     39.58MiB / 30.47GiB   0.13%     11.2MB / 983kB   50.1MB / 34.7MB
+seng468-semantic-retrieval-group13-minio-1      1.66%     177.6MiB / 30.47GiB   0.57%     885MB / 374MB    149MB / 1.16GB
+seng468-semantic-retrieval-group13-rabbitmq-1   0.97%     64.28MiB / 30.47GiB   0.21%     438kB / 340kB    40.7MB / 44MB
+
+--- Snapshot at 00:29:08 ---
+NAME                                            CPU %     MEM USAGE / LIMIT     MEM %     NET I/O           BLOCK I/O
+seng468-semantic-retrieval-group13-api-1        77.27%    1.09GiB / 30.47GiB    3.58%     702MB / 626MB     361MB / 92.1MB
+seng468-semantic-retrieval-group13-worker-1     778.70%   1.059GiB / 30.47GiB   3.48%     461MB / 3MB       244MB / 417MB
+seng468-semantic-retrieval-group13-db-1         0.46%     39.63MiB / 30.47GiB   0.13%     11.9MB / 1.02MB   50.1MB / 35.7MB
+seng468-semantic-retrieval-group13-minio-1      0.10%     177.5MiB / 30.47GiB   0.57%     955MB / 374MB     149MB / 1.23GB
+seng468-semantic-retrieval-group13-rabbitmq-1   0.35%     64.12MiB / 30.47GiB   0.21%     462kB / 360kB     40.7MB / 44MB
+
+--- Snapshot at 00:29:12 ---
+NAME                                            CPU %     MEM USAGE / LIMIT     MEM %     NET I/O           BLOCK I/O
+seng468-semantic-retrieval-group13-api-1        69.60%    1.09GiB / 30.47GiB    3.58%     772MB / 691MB     361MB / 92.1MB
+seng468-semantic-retrieval-group13-worker-1     791.70%   1.155GiB / 30.47GiB   3.79%     461MB / 3MB       244MB / 417MB
+seng468-semantic-retrieval-group13-db-1         0.73%     39.79MiB / 30.47GiB   0.13%     12.3MB / 1.04MB   50.1MB / 36.4MB
+seng468-semantic-retrieval-group13-minio-1      8.42%     178.4MiB / 30.47GiB   0.57%     1.02GB / 374MB    149MB / 1.3GB
+seng468-semantic-retrieval-group13-rabbitmq-1   23.98%    108.1MiB / 30.47GiB   0.35%     480kB / 376kB     40.7MB / 44MB
+
+--- Snapshot at 00:29:16 ---
+NAME                                            CPU %     MEM USAGE / LIMIT     MEM %     NET I/O           BLOCK I/O
+seng468-semantic-retrieval-group13-api-1        82.65%    1.09GiB / 30.47GiB    3.58%     841MB / 767MB     361MB / 92.1MB
+seng468-semantic-retrieval-group13-worker-1     607.79%   1.059GiB / 30.47GiB   3.48%     466MB / 3.02MB    244MB / 417MB
+seng468-semantic-retrieval-group13-db-1         0.99%     39.77MiB / 30.47GiB   0.13%     13.1MB / 1.09MB   50.1MB / 37.9MB
+seng468-semantic-retrieval-group13-minio-1      8.14%     179.7MiB / 30.47GiB   0.58%     1.09GB / 380MB    149MB / 1.38GB
+seng468-semantic-retrieval-group13-rabbitmq-1   1.07%     63.57MiB / 30.47GiB   0.20%     499kB / 393kB     40.7MB / 44MB
+
+--- Snapshot at 00:29:20 ---
+NAME                                            CPU %     MEM USAGE / LIMIT     MEM %     NET I/O           BLOCK I/O
+seng468-semantic-retrieval-group13-api-1        162.94%   1.09GiB / 30.47GiB    3.58%     879MB / 805MB     361MB / 92.1MB
+seng468-semantic-retrieval-group13-worker-1     763.58%   1.059GiB / 30.47GiB   3.48%     466MB / 3.02MB    244MB / 417MB
+seng468-semantic-retrieval-group13-db-1         1.43%     39.89MiB / 30.47GiB   0.13%     13.8MB / 1.13MB   50.1MB / 38.4MB
+seng468-semantic-retrieval-group13-minio-1      3.95%     181.2MiB / 30.47GiB   0.58%     1.13GB / 380MB    149MB / 1.42GB
+seng468-semantic-retrieval-group13-rabbitmq-1   0.82%     63.35MiB / 30.47GiB   0.20%     514kB / 406kB     40.7MB / 44MB
+
+--- Snapshot at 00:29:24 ---
+NAME                                            CPU %     MEM USAGE / LIMIT     MEM %     NET I/O           BLOCK I/O
+seng468-semantic-retrieval-group13-api-1        104.97%   1.09GiB / 30.47GiB    3.58%     948MB / 878MB     361MB / 92.1MB
+seng468-semantic-retrieval-group13-worker-1     520.89%   1.059GiB / 30.47GiB   3.48%     466MB / 3.02MB    244MB / 417MB
+seng468-semantic-retrieval-group13-db-1         1.28%     43.87MiB / 30.47GiB   0.14%     14.4MB / 1.16MB   50.1MB / 39.4MB
+seng468-semantic-retrieval-group13-minio-1      6.80%     188.5MiB / 30.47GiB   0.60%     1.2GB / 380MB     149MB / 1.49GB
+seng468-semantic-retrieval-group13-rabbitmq-1   147.10%   64.44MiB / 30.47GiB   0.21%     533kB / 422kB     40.7MB / 44MB
+
+--- Snapshot at 00:29:28 ---
+NAME                                            CPU %     MEM USAGE / LIMIT     MEM %     NET I/O          BLOCK I/O
+seng468-semantic-retrieval-group13-api-1        113.16%   1.09GiB / 30.47GiB    3.58%     975MB / 906MB    361MB / 92.1MB
+seng468-semantic-retrieval-group13-worker-1     784.37%   1.155GiB / 30.47GiB   3.79%     466MB / 3.02MB   244MB / 417MB
+seng468-semantic-retrieval-group13-db-1         0.59%     40MiB / 30.47GiB      0.13%     15.1MB / 1.2MB   50.1MB / 39.8MB
+seng468-semantic-retrieval-group13-minio-1      0.00%     190.2MiB / 30.47GiB   0.61%     1.23GB / 380MB   149MB / 1.52GB
+seng468-semantic-retrieval-group13-rabbitmq-1   0.20%     63.79MiB / 30.47GiB   0.20%     549kB / 435kB    40.7MB / 44MB
+
+--- Snapshot at 00:29:32 ---
+NAME                                            CPU %     MEM USAGE / LIMIT     MEM %     NET I/O           BLOCK I/O
+seng468-semantic-retrieval-group13-api-1        0.02%     1.09GiB / 30.47GiB    3.58%     996MB / 927MB     361MB / 92.1MB
+seng468-semantic-retrieval-group13-worker-1     607.52%   1.06GiB / 30.47GiB    3.48%     472MB / 3.04MB    244MB / 417MB
+seng468-semantic-retrieval-group13-db-1         0.03%     38.8MiB / 30.47GiB    0.12%     15.3MB / 1.22MB   50.1MB / 40.2MB
+seng468-semantic-retrieval-group13-minio-1      0.00%     193MiB / 30.47GiB     0.62%     1.25GB / 385MB    150MB / 1.55GB
+seng468-semantic-retrieval-group13-rabbitmq-1   0.10%     63.13MiB / 30.47GiB   0.20%     556kB / 442kB     40.7MB / 44MB
