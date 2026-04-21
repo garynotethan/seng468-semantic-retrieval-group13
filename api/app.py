@@ -2,7 +2,7 @@ import os
 import uuid
 import time
 import json as json_lib
-from flask import Flask, request, jsonify
+from flask import Flask, request, jsonify, send_from_directory
 from flask_jwt_extended import JWTManager, create_access_token, jwt_required, get_jwt_identity
 import pika
 from models import db, User, Document
@@ -38,7 +38,13 @@ def publish_to_queue(message: dict):
     except Exception as e:
         print(f"Warning: Could not publish to RabbitMQ: {e}")
 
+from flask_cors import CORS
+
+UI_DIR = os.path.abspath(os.path.join(os.path.dirname(__file__), '..', 'ui'))
+
 app = Flask(__name__)
+CORS(app) # Enable CORS for all routes
+
 
 # Basic Config
 app.config['SQLALCHEMY_DATABASE_URI'] = os.environ.get('DATABASE_URL', 'postgresql://postgres:postgres@db:5432/seng468')
@@ -60,11 +66,33 @@ with app.app_context():
             print("Database and MinIO connected successfully.")
             break
         except Exception as e:
+            db.session.rollback()
+            if 'already exists' in str(e).lower():
+                try:
+                    db.create_all()
+                    storage.init_bucket()
+                    print("Database and MinIO connected successfully.")
+                    break
+                except Exception as inner_e:
+                    db.session.rollback()
+                    e = inner_e
             print(f"Waiting for services to be ready... ({retries} retries left): {e}")
             retries -= 1
             time.sleep(2)
     else:
         print("Could not connect to database/minio after multiple retries.")
+
+
+@app.route('/', methods=['GET'])
+def serve_ui_index():
+    return send_from_directory(UI_DIR, 'index.html')
+
+
+@app.route('/<path:path>', methods=['GET'])
+def serve_ui_asset(path):
+    if path.startswith(('auth/', 'documents', 'search')):
+        return jsonify({"error": "Not found"}), 404
+    return send_from_directory(UI_DIR, path)
 
 
 @app.route('/auth/signup', methods=['POST'])
@@ -217,7 +245,7 @@ def search():
         output.append({
             "chunk_text": row.chunk_text,
             "score": row.score,
-            "document_id": row.id,
+            "document_id": row.document_id,
             "filename": row.filename,
         })
 

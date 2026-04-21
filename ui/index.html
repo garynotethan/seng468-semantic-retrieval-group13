@@ -1,0 +1,127 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Semantic Search Demo</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <div id="app-container">
+        <div id="system-banner" class="system-banner">
+            Checking backend connection...
+        </div>
+        <!-- Auth View -->
+        <div id="auth-view" class="view-section active">
+            <div class="auth-card glass-panel">
+                <div class="logo">
+                    <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="url(#gradient)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <defs>
+                            <linearGradient id="gradient" x1="0%" y1="0%" x2="100%" y2="100%">
+                                <stop offset="0%" stop-color="#8b5cf6" />
+                                <stop offset="100%" stop-color="#3b82f6" />
+                            </linearGradient>
+                        </defs>
+                        <circle cx="11" cy="11" r="8"></circle>
+                        <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
+                    </svg>
+                    <h1>Semantic Search</h1>
+                </div>
+                <div class="tabs">
+                    <button id="tab-login" class="tab active" onclick="switchAuthTab('login')">Login</button>
+                    <button id="tab-signup" class="tab" onclick="switchAuthTab('signup')">Sign Up</button>
+                </div>
+                
+                <form id="auth-form" onsubmit="handleAuth(event)">
+                    <div class="input-group">
+                        <label for="username">Username</label>
+                        <input type="text" id="username" required placeholder="Enter username">
+                    </div>
+                    <div class="input-group">
+                        <label for="password">Password</label>
+                        <input type="password" id="password" required placeholder="Enter password">
+                    </div>
+                    <button type="submit" class="btn-primary" id="auth-submit">Login</button>
+                    <div id="auth-error" class="error-message"></div>
+                </form>
+            </div>
+        </div>
+
+        <!-- Dashboard View -->
+        <div id="dashboard-view" class="view-section">
+            <header class="glass-header">
+                <div class="logo">
+                    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="url(#gradient)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <circle cx="11" cy="11" r="8"></circle>
+                        <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
+                    </svg>
+                    <h2>Semantic Search</h2>
+                </div>
+                <div class="user-controls">
+                    <span id="welcome-msg"></span>
+                    <button onclick="logout()" class="btn-secondary">Logout</button>
+                </div>
+            </header>
+
+            <main class="dashboard-layout">
+                <!-- Sidebar: Documents -->
+                <aside class="sidebar glass-panel">
+                    <div class="sidebar-header">
+                        <h3>Your Documents</h3>
+                    </div>
+                    
+                    <div class="upload-section">
+                        <form id="upload-form" onsubmit="handleUpload(event)">
+                            <label for="file-upload" class="upload-area">
+                                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                    <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
+                                    <polyline points="17 8 12 3 7 8"></polyline>
+                                    <line x1="12" y1="3" x2="12" y2="15"></line>
+                                </svg>
+                                <span>Choose PDF</span>
+                            </label>
+                            <input type="file" id="file-upload" accept="application/pdf" style="display: none;" onchange="updateFileName()">
+                            <span id="file-name" class="file-name-display"></span>
+                            <button type="submit" class="btn-primary btn-small" id="upload-btn" disabled>Upload</button>
+                        </form>
+                        <div id="upload-status" class="status-message"></div>
+                    </div>
+
+                    <div class="documents-list" id="docs-list">
+                        <!-- Populated via JS -->
+                    </div>
+                </aside>
+
+                <!-- Main Content: Search -->
+                <section class="main-content">
+                    <div class="search-container glass-panel">
+                        <form id="search-form" onsubmit="handleSearch(event)">
+                            <div class="search-input-wrapper">
+                                <svg class="search-icon" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                    <circle cx="11" cy="11" r="8"></circle>
+                                    <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
+                                </svg>
+                                <input type="text" id="search-query" placeholder="Ask a question about your documents..." required>
+                                <button type="submit" class="btn-primary" id="search-btn">Search</button>
+                            </div>
+                        </form>
+                    </div>
+
+                    <div id="search-results" class="results-container">
+                        <!-- Populated via JS -->
+                        <div class="empty-state">
+                            <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1" stroke-linecap="round" stroke-linejoin="round">
+                                <circle cx="11" cy="11" r="8"></circle>
+                                <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
+                            </svg>
+                            <p>Search across your documents to find semantic matches.</p>
+                        </div>
+                    </div>
+                </section>
+            </main>
+        </div>
+    </div>
+    <script src="app.js"></script>
+</body>
+</html>

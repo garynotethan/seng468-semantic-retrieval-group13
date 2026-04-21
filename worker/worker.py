@@ -1,6 +1,7 @@
 import os
 import json
 import time
+import uuid
 import pika
 import sqlalchemy
 import sys
@@ -55,11 +56,12 @@ def save_chunks(engine, document_id, user_id, chunks, vectors) -> None:
             conn.execute(
                 sqlalchemy.text(
                     """
-                    INSERT INTO document_chunks (document_id, user_id, chunk_index, chunk_text, embedding)
-                    VALUES (:doc_id, :user_id, :idx, :text, :embedding)
+                    INSERT INTO document_chunks (id, document_id, user_id, chunk_index, chunk_text, embedding)
+                    VALUES (:chunk_id, :doc_id, :user_id, :idx, :text, :embedding)
                     """
                 ),
                 {
+                    "chunk_id": str(uuid.uuid4()),
                     "doc_id": document_id,
                     "user_id": user_id,
                     "idx": i,
@@ -117,7 +119,7 @@ def process_document(ch, method, properties, body):
         if not chunks:
             print(f"[Worker] no text found in {filename}")
             engine = get_db_engine()
-            update_document_status(engine, doc_id, 'completed', page_count=0)
+            update_document_status(engine, doc_id, 'ready', page_count=0)
             engine.dispose()
             ch.basic_ack(delivery_tag=method.delivery_tag)
             return
@@ -128,7 +130,7 @@ def process_document(ch, method, properties, body):
         # Update status to completed
         engine = get_db_engine()
         save_chunks(engine, doc_id, user_id, chunks, vectors)
-        update_document_status(engine, doc_id, 'completed', page_count=page_count)
+        update_document_status(engine, doc_id, 'ready', page_count=page_count)
         engine.dispose()
 
         print(f"[Worker] Completed processing: {doc_id}")
@@ -136,6 +138,13 @@ def process_document(ch, method, properties, body):
 
     except Exception as e:
         print(f"[Worker] Error processing message: {e}")
+        try:
+            if 'doc_id' in locals() and doc_id:
+                engine = get_db_engine()
+                update_document_status(engine, doc_id, 'failed')
+                engine.dispose()
+        except Exception as status_error:
+            print(f"[Worker] Failed to update error status: {status_error}")
         ch.basic_nack(delivery_tag=method.delivery_tag, requeue=False)
 
 
