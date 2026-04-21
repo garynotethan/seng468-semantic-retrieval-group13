@@ -5,6 +5,7 @@ import time
 import sys
 import csv
 import threading
+import argparse
 from datetime import datetime
 
 # --- Configuration ---
@@ -12,6 +13,8 @@ HOST = "http://localhost:8080"
 TEST_DURATION = "1m"
 SPAWN_RATE = 2
 RESULTS_DIR = "test_results"
+API_CONTAINER = "seng468-semantic-retrieval-group13-api-1"
+WORKER_CONTAINER = "seng468-semantic-retrieval-group13-worker-1"
 
 # Experiments to run
 EXPERIMENTS = [
@@ -19,6 +22,7 @@ EXPERIMENTS = [
     {"name": "sustained", "users": 50, "workers": 2, "desc": "Sustained Load (50 Users, 2 Workers)"},
     {"name": "sweep_1w", "users": 10, "workers": 1, "desc": "Worker Sweep (10 Users, 1 Worker)"},
     {"name": "sweep_4w", "users": 10, "workers": 4, "desc": "Worker Sweep (10 Users, 4 Worker)"},
+    {"name": "breaking_point", "users": 200, "workers": 4, "desc": "Stress Test (200 Users, 4 Workers)"},
 ]
 
 def run_command(cmd, env=None):
@@ -63,6 +67,37 @@ def run_locust(name, users, spawn_rate, duration, is_warmup=False):
     run_command(cmd)
     return f"{actual_prefix}_stats.csv"
 
+def record_profile(container, name, duration):
+    """Starts a py-spy recording in the background."""
+    if not os.path.exists(RESULTS_DIR):
+        os.makedirs(RESULTS_DIR)
+    
+    output_file = os.path.join(RESULTS_DIR, f"profile_{container}_{name}_{datetime.now().strftime('%Y%m%d_%H%M%S')}.svg")
+    print(f"--- Profiling {container} for {duration} -> {output_file} ---")
+    
+    # We find the PID of the main gunicorn/python process in the container
+    # pid 1 is usually the entrypoint, but we want to be sure.
+    cmd = [
+        "docker", "exec", "-d", container,
+        "py-spy", "record", "-o", f"/tmp/profile.svg", "--duration", duration, "--pid", "1"
+    ]
+    try:
+        subprocess.run(cmd, check=False)
+        # We need a follow up to copy the file out after duration
+        return output_file
+    except Exception as e:
+        print(f"Failed to start profiling: {e}")
+        return None
+
+def collect_profile(container, host_path):
+    """Copies the profile SVG from the container to the host."""
+    time.sleep(2) # brief buffer
+    cmd = ["docker", "cp", f"{container}:/tmp/profile.svg", host_path]
+    try:
+        subprocess.run(cmd, check=False)
+    except Exception as e:
+        print(f"Failed to collect profile: {e}")
+
 def extract_summary(csv_path):
     """Extracts the 'Aggregated' row from Locust stats CSV."""
     try:
@@ -82,19 +117,49 @@ def extract_summary(csv_path):
     return None
 
 def main():
-    if not os.path.exists("tests/locustfile.py"):
-        print("Error: tests/locustfile.py not found. Run from project root.")
-        sys.exit(1)
+    parser = argparse.ArgumentParser(description="Full Performance Benchmark Suite")
+    parser.add_argument("-n", "--name", help="Specific experiment name to run")
+    parser.add_argument("-p", "--profile", action="store_true", help="Enable py-spy profiling (requires py-spy in images)")
+    args = parser.parse_args()
 
-    print("🚀 Starting Full Performance Benchmark Suite")
+    experiments_to_run = EXPERIMENTS
+    if args.name:
+        experiments_to_run = [e for e in EXPERIMENTS if e["name"] == args.name]
+        if not experiments_to_run:
+            print(f"Error: Experiment '{args.name}' not found.")
+            print(f"Available experiments: {', '.join([e['name'] for e in EXPERIMENTS])}")
+            sys.exit(1)
+
+    print("Starting Full Performance Benchmark Suite")
     summary_results = []
 
-    for exp in EXPERIMENTS:
+    for exp in experiments_to_run:
         start_services(exp["workers"])
         # 1. Warmup
         run_locust(exp["name"], exp["users"], SPAWN_RATE, TEST_DURATION, is_warmup=True)
+        
         # 2. Actual Benchmark
+        profile_tasks = []
+        if args.profile:
+            # Start profiling in background
+            d_sec = 60 # Default 1m in seconds
+            if TEST_DURATION.endswith('m'):
+                d_sec = int(TEST_DURATION[:-1]) * 60
+            elif TEST_DURATION.endswith('s'):
+                d_sec = int(TEST_DURATION[:-1])
+            
+            p1 = record_profile(API_CONTAINER, exp["name"], str(d_sec))
+            p2 = record_profile(WORKER_CONTAINER, exp["name"], str(d_sec))
+            if p1: profile_tasks.append((API_CONTAINER, p1))
+            if p2: profile_tasks.append((WORKER_CONTAINER, p2))
+
         csv_path = run_locust(exp["name"], exp["users"], SPAWN_RATE, TEST_DURATION, is_warmup=False)
+        
+        if args.profile:
+            print("--- Collecting profiling results ---")
+            for container, path in profile_tasks:
+                collect_profile(container, path)
+
         stats = extract_summary(csv_path)
         if stats:
             stats["Experiment"] = exp["desc"]
@@ -104,7 +169,7 @@ def main():
 
     # Output Summary Table
     print("\n" + "="*80)
-    print("📊 BENCHMARK SUMMARY")
+    print("BENCHMARK SUMMARY")
     print("="*80)
     print(f"{'Experiment':<35} | {'RPS':>6} | {'Avg':>8} | {'P95':>8} | {'Max':>8} | {'Fail':>5}")
     print("-" * 80)

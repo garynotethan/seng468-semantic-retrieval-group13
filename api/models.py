@@ -36,7 +36,7 @@ class DocumentChunk(db.Model):
     # cascade for proper deletion 
     user_id = db.Column(db.Integer, nullable=False) 
     chunk_index = db.Column(db.Integer, nullable=True)
-    chunk_text = db.Column(db.Integer, nullable=True)
+    chunk_text = db.Column(db.Text, nullable=True)
     embedding = db.Column(Vector(384))
 
      

@@ -222,9 +222,13 @@ def search():
         })
 
     t3 = time.time()
+    query_time_ms = (t3 - t0) * 1000
     print(f"embed={t1-t0:.3f}s  db_query={t2-t1:.3f}s  serialize={t3-t2:.3f}s  total={t3-t0:.3f}s")
 
-    return jsonify(output), 200
+    return jsonify({
+        "results": output,
+        "query_time_ms": query_time_ms
+    }), 200
 
 if __name__ == '__main__':
     app.run(host='0.0.0.0', debug=True, port=8080)
