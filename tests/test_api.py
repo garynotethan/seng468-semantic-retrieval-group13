@@ -97,7 +97,9 @@ class TestAPIAuth(unittest.TestCase):
         with urllib.request.urlopen(req) as response:
             self.assertEqual(response.status, 200)
             res_body = json.loads(response.read().decode())
-            self.assertIsInstance(res_body, list)
+            self.assertIsInstance(res_body, dict)
+            self.assertIn("results", res_body)
+            self.assertIsInstance(res_body["results"], list)
 
 if __name__ == '__main__':
     unittest.main()
