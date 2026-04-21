@@ -22,7 +22,7 @@ EXPERIMENTS = [
     {"name": "sustained", "users": 50, "workers": 2, "desc": "Sustained Load (50 Users, 2 Workers)"},
     {"name": "sweep_1w", "users": 10, "workers": 1, "desc": "Worker Sweep (10 Users, 1 Worker)"},
     {"name": "sweep_4w", "users": 10, "workers": 4, "desc": "Worker Sweep (10 Users, 4 Worker)"},
-    {"name": "breaking_point", "users": 200, "workers": 4, "desc": "Stress Test (200 Users, 4 Workers)"},
+    {"name": "breaking_point", "users": 200, "workers": 2, "desc": "Stress Test (200 Users, 2 Workers)"},
 ]
 
 def run_command(cmd, env=None):
@@ -116,11 +116,74 @@ def extract_summary(csv_path):
         print(f"Error parsing {csv_path}: {e}")
     return None
 
+def run_dynamic_stress_test(workers, args):
+    """Gradually increases users until the system hits a breaking point."""
+    print("\n--- 🕵️ starting Dynamic breaking point discovery ---")
+    start_services(workers)
+    
+    current_users = 50
+    increment = 50
+    stable_results = []
+    breaking_point = None
+    
+    while True:
+        name = f"stress_{current_users}"
+        print(f"\n--- Testing with {current_users} users ---")
+        
+        # Warmup
+        run_locust(name, current_users, SPAWN_RATE, TEST_DURATION, is_warmup=True)
+        
+        # Benchmark
+        # (Profiling omitted in dynamic test to keep it fast, but could be added)
+        csv_path = run_locust(name, current_users, SPAWN_RATE, TEST_DURATION, is_warmup=False)
+        stats = extract_summary(csv_path)
+        
+        if not stats:
+            print("Failed to get stats. Stopping.")
+            breaking_point = current_users
+            break
+            
+        requests = float(stats["RPS"]) * 60 # approx total requests
+        failures = int(stats["Failures"])
+        failure_rate = (failures / requests) if requests > 0 else 0
+        avg_latency = float(stats["Avg"])
+        
+        stats["Users"] = current_users
+        stats["Workers"] = workers
+        stats["Experiment"] = f"Stress {current_users}"
+        
+        print(f"Results: {failure_rate:.2%} failures, {avg_latency:.1f}ms avg latency")
+        
+        # Breaking Conditions
+        if failure_rate > 0.01:
+            print(f"BREAK: Failure rate {failure_rate:.2%} exceeded 1%")
+            breaking_point = current_users
+            break
+        if avg_latency > 5000:
+            print(f"BREAK: Avg latency {avg_latency:.1f}ms exceeded 5s")
+            breaking_point = current_users
+            break
+            
+        stable_results.append(stats)
+        current_users += increment
+        
+    print("\n" + "="*40)
+    print(f"DYNAMIC TEST COMPLETE")
+    print(f"Stable Capacity: {stable_results[-1]['Users'] if stable_results else 0} users")
+    print(f"Breaking Point : {breaking_point} users")
+    print("="*40)
+    return stable_results
+
 def main():
     parser = argparse.ArgumentParser(description="Full Performance Benchmark Suite")
     parser.add_argument("-n", "--name", help="Specific experiment name to run")
     parser.add_argument("-p", "--profile", action="store_true", help="Enable py-spy profiling (requires py-spy in images)")
+    parser.add_argument("-a", "--auto-break", action="store_true", help="Run dynamic breaking point test")
     args = parser.parse_args()
+
+    if not os.path.exists("tests/locustfile.py"):
+        print("Error: tests/locustfile.py not found. Run from project root.")
+        sys.exit(1)
 
     experiments_to_run = EXPERIMENTS
     if args.name:
@@ -130,42 +193,47 @@ def main():
             print(f"Available experiments: {', '.join([e['name'] for e in EXPERIMENTS])}")
             sys.exit(1)
 
-    print("Starting Full Performance Benchmark Suite")
+    print("🚀 Starting Full Performance Benchmark Suite")
     summary_results = []
 
-    for exp in experiments_to_run:
-        start_services(exp["workers"])
-        # 1. Warmup
-        run_locust(exp["name"], exp["users"], SPAWN_RATE, TEST_DURATION, is_warmup=True)
-        
-        # 2. Actual Benchmark
-        profile_tasks = []
-        if args.profile:
-            # Start profiling in background
-            d_sec = 60 # Default 1m in seconds
-            if TEST_DURATION.endswith('m'):
-                d_sec = int(TEST_DURATION[:-1]) * 60
-            elif TEST_DURATION.endswith('s'):
-                d_sec = int(TEST_DURATION[:-1])
+    if args.auto_break:
+        # Use workers from baseline or default to 2
+        workers = next((e["workers"] for e in EXPERIMENTS if e["name"] == "baseline"), 2)
+        summary_results = run_dynamic_stress_test(workers, args)
+    else:
+        for exp in experiments_to_run:
+            start_services(exp["workers"])
+            # 1. Warmup
+            run_locust(exp["name"], exp["users"], SPAWN_RATE, TEST_DURATION, is_warmup=True)
             
-            p1 = record_profile(API_CONTAINER, exp["name"], str(d_sec))
-            p2 = record_profile(WORKER_CONTAINER, exp["name"], str(d_sec))
-            if p1: profile_tasks.append((API_CONTAINER, p1))
-            if p2: profile_tasks.append((WORKER_CONTAINER, p2))
+            # 2. Actual Benchmark
+            profile_tasks = []
+            if args.profile:
+                # Start profiling in background
+                d_sec = 60 # Default 1m in seconds
+                if TEST_DURATION.endswith('m'):
+                    d_sec = int(TEST_DURATION[:-1]) * 60
+                elif TEST_DURATION.endswith('s'):
+                    d_sec = int(TEST_DURATION[:-1])
+                
+                p1 = record_profile(API_CONTAINER, exp["name"], str(d_sec))
+                p2 = record_profile(WORKER_CONTAINER, exp["name"], str(d_sec))
+                if p1: profile_tasks.append((API_CONTAINER, p1))
+                if p2: profile_tasks.append((WORKER_CONTAINER, p2))
 
-        csv_path = run_locust(exp["name"], exp["users"], SPAWN_RATE, TEST_DURATION, is_warmup=False)
-        
-        if args.profile:
-            print("--- Collecting profiling results ---")
-            for container, path in profile_tasks:
-                collect_profile(container, path)
+            csv_path = run_locust(exp["name"], exp["users"], SPAWN_RATE, TEST_DURATION, is_warmup=False)
+            
+            if args.profile:
+                print("--- Collecting profiling results ---")
+                for container, path in profile_tasks:
+                    collect_profile(container, path)
 
-        stats = extract_summary(csv_path)
-        if stats:
-            stats["Experiment"] = exp["desc"]
-            stats["Users"] = exp["users"]
-            stats["Workers"] = exp["workers"]
-            summary_results.append(stats)
+            stats = extract_summary(csv_path)
+            if stats:
+                stats["Experiment"] = exp["desc"]
+                stats["Users"] = exp["users"]
+                stats["Workers"] = exp["workers"]
+                summary_results.append(stats)
 
     # Output Summary Table
     print("\n" + "="*80)
@@ -187,8 +255,8 @@ def main():
         f.write("# benchmark Summary Results\n\n")
         f.write(md_table)
     
-    print("\n✅ Benchmark suite completed!")
-    print(f"📄 Summary saved to: {summary_path}")
+    print("\nBenchmark suite completed!")
+    print(f"Summary saved to: {summary_path}")
 
 if __name__ == "__main__":
     main()
