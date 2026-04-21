@@ -27,9 +27,10 @@ def get_minio_client():
         secure=False #cuz its local
     )
 
-def extract_text_chunks(pdf_bytes, chunk_size, overlap) -> list:
+def extract_text_chunks(pdf_bytes, chunk_size, overlap) -> tuple[list, int]:
     
     doc = fitz.Document(stream=pdf_bytes, filetype="pdf")
+    page_count = doc.page_count
     # this reads directly rather than saving a temp file
 
     text = pymupdf4llm.to_markdown(doc)
@@ -41,7 +42,7 @@ def extract_text_chunks(pdf_bytes, chunk_size, overlap) -> list:
         chunk = text[start:end].strip()
         if chunk: chunks.append(chunk)
         start += chunk_size - overlap
-    return chunks
+    return chunks, page_count
 
 def save_chunks(engine, document_id, user_id, chunks, vectors) -> None:
 
@@ -112,7 +113,7 @@ def process_document(ch, method, properties, body):
         res.close()
         print(f"[Worker] downloaded {len(pdf_bytes)} bytes from minio")
 
-        chunks = extract_text_chunks(pdf_bytes, 500, 100)
+        chunks, page_count = extract_text_chunks(pdf_bytes, 500, 100)
         if not chunks:
             print(f"[Worker] no text found in {filename}")
             engine = get_db_engine()
@@ -122,12 +123,12 @@ def process_document(ch, method, properties, body):
             return
         
         vectors = embed_chunks(chunks)
-        print(f"[Worker] generated {len(vectors)} embeddings")
+        print(f"[Worker] generated {len(vectors)} embeddings for {page_count} pages")
 
         # Update status to completed
         engine = get_db_engine()
         save_chunks(engine, doc_id, user_id, chunks, vectors)
-        update_document_status(engine, doc_id, 'completed', page_count=1)
+        update_document_status(engine, doc_id, 'completed', page_count=page_count)
         engine.dispose()
 
         print(f"[Worker] Completed processing: {doc_id}")

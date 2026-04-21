@@ -19,6 +19,7 @@ EXPERIMENTS = [
     {"name": "sustained", "users": 50, "workers": 2, "desc": "Sustained Load (50 Users, 2 Workers)"},
     {"name": "sweep_1w", "users": 10, "workers": 1, "desc": "Worker Sweep (10 Users, 1 Worker)"},
     {"name": "sweep_4w", "users": 10, "workers": 4, "desc": "Worker Sweep (10 Users, 4 Worker)"},
+    {"name": "breaking_point", "users": 200, "workers": 4, "desc": "Stress Test (200 Users, 4 Workers)"},
 ]
 
 def run_command(cmd, env=None):
