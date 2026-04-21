@@ -10,8 +10,8 @@ from datetime import datetime
 
 # --- Configuration ---
 HOST = "http://localhost:8080"
-TEST_DURATION = "1m"
-SPAWN_RATE = 2
+TEST_DURATION = "45s"
+SPAWN_RATE = 50
 RESULTS_DIR = "test_results"
 API_CONTAINER = "seng468-semantic-retrieval-group13-api-1"
 WORKER_CONTAINER = "seng468-semantic-retrieval-group13-worker-1"
@@ -22,7 +22,7 @@ EXPERIMENTS = [
     {"name": "sustained", "users": 50, "workers": 2, "desc": "Sustained Load (50 Users, 2 Workers)"},
     {"name": "sweep_1w", "users": 10, "workers": 1, "desc": "Worker Sweep (10 Users, 1 Worker)"},
     {"name": "sweep_4w", "users": 10, "workers": 4, "desc": "Worker Sweep (10 Users, 4 Worker)"},
-    {"name": "breaking_point", "users": 200, "workers": 2, "desc": "Stress Test (200 Users, 2 Workers)"},
+    {"name": "auto_break", "users": 0, "workers": 2, "desc": "Dynamic Breaking Point Discovery"},
 ]
 
 def run_command(cmd, env=None):
@@ -121,8 +121,8 @@ def run_dynamic_stress_test(workers, args):
     print("\n--- 🕵️ starting Dynamic breaking point discovery ---")
     start_services(workers)
     
-    current_users = 50
-    increment = 50
+    current_users = 200
+    increment = 200
     stable_results = []
     breaking_point = None
     
@@ -202,6 +202,10 @@ def main():
         summary_results = run_dynamic_stress_test(workers, args)
     else:
         for exp in experiments_to_run:
+            if exp["name"] == "auto_break":
+                summary_results.extend(run_dynamic_stress_test(exp["workers"], args))
+                continue
+
             start_services(exp["workers"])
             # 1. Warmup
             run_locust(exp["name"], exp["users"], SPAWN_RATE, TEST_DURATION, is_warmup=True)
