@@ -11,7 +11,7 @@ from datetime import datetime
 # --- Configuration ---
 HOST = "http://localhost:8080"
 TEST_DURATION = "45s"
-SPAWN_RATE = 50
+SPAWN_RATE = 2
 RESULTS_DIR = "test_results"
 API_CONTAINER = "seng468-semantic-retrieval-group13-api-1"
 WORKER_CONTAINER = "seng468-semantic-retrieval-group13-worker-1"
@@ -118,7 +118,7 @@ def extract_summary(csv_path):
 
 def run_dynamic_stress_test(workers, args):
     """Gradually increases users until the system hits a breaking point."""
-    print("\n--- 🕵️ starting Dynamic breaking point discovery ---")
+    print("\n---starting Dynamic breaking point discovery ---")
     start_services(workers)
     
     current_users = 200
@@ -193,7 +193,7 @@ def main():
             print(f"Available experiments: {', '.join([e['name'] for e in EXPERIMENTS])}")
             sys.exit(1)
 
-    print("🚀 Starting Full Performance Benchmark Suite")
+    print("Starting Full Performance Benchmark Suite")
     summary_results = []
 
     if args.auto_break:
